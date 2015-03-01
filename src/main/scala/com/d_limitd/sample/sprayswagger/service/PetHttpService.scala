@@ -1,6 +1,6 @@
-package com.dlimitd.sample.sprayswagger.service
+package com.d_limitd.sample.sprayswagger.service
 
-import com.dlimitd.sample.sprayswagger.domain._
+import com.d_limitd.sample.sprayswagger.domain._
 import com.wordnik.swagger.annotations._
 import javax.ws.rs.Path
 import spray.routing.HttpService
@@ -8,13 +8,29 @@ import spray.http._
 import spray.httpx.marshalling.ToResponseMarshallable.isMarshallable
 import spray.routing.Directive.pimpApply
 import spray.routing.directives.FieldDefMagnet.apply
+import com.netaporter.salad.metrics.actor.admin.spray._
+import com.netaporter.salad.metrics.actor.admin.spray.OutputMetricsMessages._
+import com.netaporter.salad.metrics.spray.metrics.MetricsDirectiveFactory
 
 @Api(value = "/pet", description = "Operations about pets.", position = 0)
 trait PetHttpService extends HttpService {
 
-  import com.dlimitd.sample.sprayswagger.web.Json4sSupport._
+  import com.d_limitd.sample.sprayswagger.web.Json4sSupport._
 
-  val routes = readRoute ~ updateRoute ~ deleteRoute ~ addRoute ~ searchRoute ~ readRouteForNestedResource
+  val routes = readRoute ~ updateRoute ~ deleteRoute ~ addRoute ~ searchRoute ~ readRouteForNestedResource ~ adminMetricsRoute
+  
+  val factory: MetricsDirectiveFactory = MetricsDirectiveFactory()
+  
+  // Create a timer for timing GET("/bob") requests
+  factory.defaultMetricsActorFactory.eventActor()
+  val timeMetric = factory.timer("petrequests").time
+  
+  // Create a counter for counting GET("/bob") requests
+  // val requestCounter = factory.counter("petrequests").all.count
+  
+  // Join the metrics together saying, I'm monitoring both the time and num of requests for GET("/bob")
+  // val petMetrics = time & requestCounter
+
 
 
   @ApiOperation(value = "Find a pet by ID", notes = "Returns a pet based on ID", httpMethod = "GET", response = classOf[Pet])
@@ -80,7 +96,9 @@ trait PetHttpService extends HttpService {
   @ApiOperation(value = "Searches for a pet", nickname = "searchPet", httpMethod = "GET", produces = "application/json, application/xml")
   def searchRoute = get {
     path("pet") {
-      complete(new Pet(1, "sparky", new java.util.Date()))
+      timeMetric {
+        complete(new Pet(1, "sparky", new java.util.Date()))
+      } 
     }
   }
 
@@ -106,6 +124,14 @@ trait PetHttpService extends HttpService {
       (petId, friendId) => {
         complete(new Pet(2, "scooby (sparky's friend)", new java.util.Date()))
       }
+    }
+  }
+  
+  val metricsOutputActor = factory.defaultMetricsActorFactory.eventTellAdminActor()
+
+  def adminMetricsRoute = path("admin" / "metrics") {
+    get {
+        ctx => metricsOutputActor ! OutputMetrics(ctx)
     }
   }
 }

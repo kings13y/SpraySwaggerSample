@@ -1,4 +1,4 @@
-package com.dlimitd.sample.sprayswagger.web
+package com.d_limitd.sample.sprayswagger.web
 
 import spray.httpx.Json4sJacksonSupport
 import org.json4s._

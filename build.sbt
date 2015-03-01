@@ -70,6 +70,7 @@ libraryDependencies ++= Seq (
   "com.gettyimages" %% "spray-swagger" % "0.5.0"// excludeAll( ExclusionRule(organization = "org.json4s") )
   ,"org.json4s" %% "json4s-jackson" % "3.2.10"
   ,"com.typesafe" % "config" % "1.2.1"
+  ,"com.netaporter.salad" %% "salad-metrics-core" % "0.2.8"
 )
 
 /* you may need these repos */

@@ -1,4 +1,4 @@
-package com.dlimitd.sample.sprayswagger.domain
+package com.d_limitd.sample.sprayswagger.domain
 
 case class User(username: String, status: String)
 

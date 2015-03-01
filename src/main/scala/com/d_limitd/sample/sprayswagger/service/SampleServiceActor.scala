@@ -1,4 +1,4 @@
-package com.dlimitd.sample.sprayswagger.service
+package com.d_limitd.sample.sprayswagger.service
 
 import akka.actor.ActorLogging
 import spray.routing._
@@ -19,7 +19,7 @@ class SampleServiceActor
     override def actorRefFactory = context
 
     val pets = new PetHttpService {
-      def actorRefFactory = context
+      def actorRefFactory = context.system
     }
 
     def receive = runRoute(pets.routes ~ swaggerService.routes ~
